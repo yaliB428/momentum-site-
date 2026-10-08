@@ -24,7 +24,8 @@
    1. Language: a saved choice wins, then the browser's language. A shared /he/ link always opens in Hebrew.
    2. A page reached through the veil starts covered, so the fade continues across the page change.
    3. The static-hero decision. CSS follows the class, so the two can never disagree. The scroll film plays on every
-      large screen, reduced-motion devices included (client decision): it only moves while the visitor scrolls. */
+      screen, phones and reduced-motion devices included (client decision): it only moves while the visitor scrolls.
+      Only a visitor who asked to save data gets the still pictures. The villa tour keeps its own phone rule (tour-static). */
 (function () {
   var d = document.documentElement; d.classList.add('js');
   var LANG = 'en', ALT = 'he/';
@@ -43,12 +44,14 @@
   ];
   var COMPUTER = '(any-pointer: fine)';   /* a mouse or touchpad is present: any window shape gets the film */
   var TINY = '(max-width: 600px)';        /* too narrow for the journey on any device */
-  function isStatic() {
+  var SAVE = !!(navigator.connection && navigator.connection.saveData);
+  /* a phone-sized screen: the 30-second villa tour shows its short loop there instead */
+  function phone() {
     if (matchMedia(TINY).matches) return true;
     if (matchMedia(COMPUTER).matches) return false;
     return G.some(function (q) { return matchMedia(q).matches; });
   }
-  function set() { d.classList.toggle('is-static', isStatic()); }
+  function set() { d.classList.toggle('is-static', SAVE); d.classList.toggle('tour-static', SAVE || phone()); }
   set();
   window.__heroGate = { G: G.concat([COMPUTER, TINY]), set: set };
 })();
@@ -272,7 +275,7 @@ a.pin:focus-visible{outline:none}
 .country-h{margin:0;font:300 clamp(4.4rem,11vw,10.5rem)/.9 var(--f-display);letter-spacing:-.035em;color:var(--text)}
 .cap-sub{margin:20px 0 0;max-width:36ch;font-size:clamp(1rem,1.25vw,1.18rem);color:var(--text);--ks:clamp(0,(var(--k,0) - .5) * 3,1);opacity:calc(var(--ks) * .92);transform:translateY(calc((1 - var(--ks)) * 12px))}
 .hint-touch{display:none}
-@media (hover:none){.hint-mouse{display:none}.hint-touch{display:inline}}
+@media (hover:none){.hint-mouse{display:none}.hint-touch{display:inline}.film-pins.live .pin .go{max-height:22px;opacity:1;margin-top:3px}}
 .split .w{display:inline-block;white-space:nowrap}
 .split .c{display:inline-block}
 .fx-lights .c{--kc:clamp(0,(var(--k,0) - var(--th,0)) * 5,1);opacity:calc(.03 + .97 * var(--kc));transform:translateY(calc((1 - var(--kc)) * 7px))}
@@ -509,8 +512,8 @@ body.hm .j-chip .j-in{background:linear-gradient(180deg,#16294A,#0C1A2F);border-
 /* the villa tour: one long drone shot the scroll flies; at the end the night keeps moving.
    It starts under the last screen of the film and only shows once it is pinned, so the dive hands over without a seam. */
 .tour{position:relative;background:var(--canvas)}
-html.js:not(.is-static) .tour{margin-top:-100vh;margin-top:-100svh;background:none}
-html.js:not(.is-static) .tour:not(.pinned) .tour-stage{visibility:hidden}
+html.js:not(.tour-static) .tour{margin-top:-100vh;margin-top:-100svh;background:none}
+html.js:not(.tour-static) .tour:not(.pinned) .tour-stage{visibility:hidden}
 .tour-stage{position:sticky;top:0;height:100vh;height:100svh;overflow:hidden;background:var(--canvas)}
 .tour-poster,.tour-film,.tour-loop{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .tour-film{opacity:0;transition:opacity .8s var(--ease-out)}
@@ -518,8 +521,8 @@ html.js:not(.is-static) .tour:not(.pinned) .tour-stage{visibility:hidden}
 .tour-loop{opacity:0;transition:opacity .9s var(--ease-out)}
 .tour.at-end .tour-loop{opacity:1}
 html:not(.js) .tour-stage{position:relative}
-.is-static .tour-film,.is-static .tour-poster{display:none}
-.is-static .tour-loop,html:not(.js) .tour-loop{opacity:1}
+.tour-static .tour-film,.tour-static .tour-poster{display:none}
+.tour-static .tour-loop,html:not(.js) .tour-loop{opacity:1}
 /* the chapters rise over the film; --td (0..1) is how much of the middle of the screen their words cover, and the film steps back by that much */
 .tour-shade{position:absolute;inset:0;z-index:1;pointer-events:none;background-color:rgba(5,5,5,calc(.06 + .56 * var(--td,0)));transition:background-color .35s linear}
 .tour-run{position:relative;z-index:1;padding-top:30vh;padding-top:30svh;text-shadow:0 1px 16px rgba(0,0,0,.55)}
@@ -696,6 +699,8 @@ html:not(.js) .tour-stage{position:relative}
 
 /* responsive */
 @media (max-width:900px){.cap,[dir=rtl] .cap{max-width:calc(100vw - 2 * var(--gutter));width:auto}}
+/* on a tall narrow screen Cyprus sits in the upper third: the chooser's words go above it, under the bar */
+@media (max-width:720px),(orientation:portrait) and (max-width:1024px){.chooser .cap,[dir=rtl] .chooser .cap{top:calc(64px + 3vh);width:auto;max-width:calc(100vw - 2 * var(--gutter))}.chooser .cap-h{font-size:clamp(1.6rem,7vw,2.2rem)}.chooser .cap-sub{margin-top:12px}}
 @media (max-width:1100px){.ledger.three{grid-template-columns:repeat(2,minmax(0,1fr))}.story-head{position:static}.cards{grid-template-columns:repeat(2,minmax(0,1fr))}html:not(.j-on) .process .j-world{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media (max-width:1060px){.seg .seg-more{display:none}}
 @media (max-width:900px){
@@ -2238,7 +2243,7 @@ if (tour) {
   /* what the words cover: each chapter's content, and a flying chapter's whole stage (lighter: it is mostly air) */
   const blocks = $$('.tour-run > .sec > .wrap, .tour-run > .journey > .j-stage', tour).map(el => ({ el, w: el.classList.contains('j-stage') ? 0.75 : 1 }));
   let tTop = 0, tTarget = 0, tShown = 0, tRaf = null, tLast = 0, tSeeking = false, tNext = null, tStarted = false, tNear = false, tAtEnd = null, tDim = -1;
-  const tStatic = () => document.documentElement.classList.contains('is-static');
+  const tStatic = () => document.documentElement.classList.contains('tour-static');
   /* the scroll, as a second of film: straight lines between the chapter marks */
   function tFilm() {
     const vh = innerHeight, y = scrollY;
