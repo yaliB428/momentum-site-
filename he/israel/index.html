@@ -2018,7 +2018,7 @@ function jRender(j, p) {
     /* the room's furniture leaves quickly once it is beside you, so it never stands in front of the words */
     const op = rd >= 0 ? 1 - smooth(rd, f0, (it.fog || j.fog) * jU) : 1 - smooth(-rd, 0, it.deco ? pass * 0.5 : pass);
     const hide = op < 0.004 || -rd > behind;
-    if (hide !== c.hide) { c.hide = hide; it.el.style.visibility = hide ? 'hidden' : ''; if (hide && c.near) { c.near = false; it.el.classList.remove('near'); } }
+    if (hide !== c.hide) { c.hide = hide; it.el.style.visibility = hide ? 'hidden' : ''; if (hide && c.near) { c.near = false; it.el.classList.remove('near'); } if (hide) it.lts.forEach(o => { o.kr = 0; }); }
     if (hide) return;
     const dx = it.x - cam.x, dy = it.y - cam.y, f = it.fixed ? 1 : clamp(Math.abs(rd) / rotD);
     const rx = it.rx * f, ry = it.ry * f;
@@ -2036,7 +2036,7 @@ function jRender(j, p) {
     }
     if (it.lts.length && ltDraw) {
       const k = clamp(1 - Math.max(0, rd) / (900 * jU)), now = performance.now();
-      it.lts.forEach(o => { o.k = k; ltDraw(o, k, now); });
+      it.lts.forEach(o => { o.k = Math.max(k, o.kr || 0); ltDraw(o, o.k, now); });
     }
   });
   if (j.railEls.length) {
@@ -2051,8 +2051,11 @@ function jTick(now) {
   J.forEach(j => {
     if (!j.on || !j.live) return;
     const d = j.target - j.shown;
-    if (Math.abs(d) < 0.00015) j.shown = j.target; else { j.shown += d * (1 - Math.pow(1 - 0.13, dt / 16.667)); busy = true; }
+    let moving = false;
+    if (Math.abs(d) < 0.00015) j.shown = j.target; else { j.shown += d * (1 - Math.pow(1 - 0.13, dt / 16.667)); moving = busy = true; }
     jRender(j, j.shown);
+    /* the camera has stopped: whatever it had begun to write on a card in sight is finished within about half a second */
+    if (!moving) j.items.forEach(it => { if (it.c.hide || !(it.c.op > 0.25)) return; it.lts.forEach(o => { if (o.k > 0 && o.k < 1) { o.kr = Math.min(1, o.k + dt / 500); busy = true; } }); });
   });
   if (busy) jRaf = requestAnimationFrame(jTick); else { jRaf = null; jLast = 0; }
 }
