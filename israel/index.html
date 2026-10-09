@@ -25,7 +25,7 @@
    2. A page reached through the veil starts covered, so the fade continues across the page change.
    3. The static-hero decision. CSS follows the class, so the two can never disagree. The scroll film plays on every
       screen, phones and reduced-motion devices included (client decision): it only moves while the visitor scrolls.
-      Only a visitor who asked to save data gets the still pictures. The villa tour keeps its own phone rule (tour-static). */
+      Only a visitor who asked to save data gets the still pictures, and the villa tour's short loop (tour-static). */
 (function () {
   var d = document.documentElement; d.classList.add('js');
   var LANG = 'en', ALT = '../he/israel/';
@@ -36,24 +36,10 @@
     else if (LANG === 'he' && pref === 'en') location.replace(ALT + location.hash);
   } catch (e) {}
   try { if (sessionStorage.getItem('mcg-pos') || sessionStorage.getItem('mcg-go')) { d.classList.add('arriving'); setTimeout(function () { d.classList.remove('arriving'); }, 4000); } } catch (e) {}
-  var G = [
-    '(max-width: 720px)',
-    '(orientation: portrait) and (max-width: 1024px)',
-    '(orientation: portrait) and (pointer: coarse)',
-    '(orientation: landscape) and (pointer: coarse) and (max-height: 560px)'
-  ];
-  var COMPUTER = '(any-pointer: fine)';   /* a mouse or touchpad is present: any window shape gets the film */
-  var TINY = '(max-width: 600px)';        /* too narrow for the journey on any device */
   var SAVE = !!(navigator.connection && navigator.connection.saveData);
-  /* a phone-sized screen: the 30-second villa tour shows its short loop there instead */
-  function phone() {
-    if (matchMedia(TINY).matches) return true;
-    if (matchMedia(COMPUTER).matches) return false;
-    return G.some(function (q) { return matchMedia(q).matches; });
-  }
-  function set() { d.classList.toggle('is-static', SAVE); d.classList.toggle('tour-static', SAVE || phone()); }
+  function set() { d.classList.toggle('is-static', SAVE); d.classList.toggle('tour-static', SAVE); }
   set();
-  window.__heroGate = { G: G.concat([COMPUTER, TINY]), set: set };
+  window.__heroGate = { G: [], set: set };
 })();
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -198,6 +184,7 @@ h2[tabindex="-1"]:focus{outline:none}
 /* the film lives in a true 16:9 box that covers the window, so the globe can always be framed whole */
 .media,.film-pins{position:absolute;left:50%;top:50%;width:max(100%,177.78vh);height:max(100%,56.25vw);transform:translate3d(-50%,calc(-50% + var(--my,0px)),0) scale(var(--ms,1));transform-origin:50% 50%}
 .media{will-change:transform}
+.stage.film-m .media{width:100%;height:100%}
 .zoom{position:absolute;inset:0;transform:scale(var(--zs));transform-origin:var(--zx) var(--zy)}
 .is-static .media,html:not(.js) .media{left:0;top:0;width:100%;height:100%;transform:none}
 .poster,.poster-end{position:absolute;inset:0;background:var(--space) center/cover no-repeat}
@@ -1378,6 +1365,10 @@ $$('.hero .il-headline').forEach(box => {
 const hero = $('.hero'), stage = $('#stage'), video = $('#heroVideo'), poster = $('.poster'), posterEnd = $('.poster-end');
 const media = $('.media'), lockup = $('#lockup'), nav = $('#nav'), ring = $('.ring'), cue = $('.cue');
 const INTRO = !!(F.intro && lockup);
+/* an upright screen gets the film's upright cut where there is one: the whole cut fills the screen, so nothing is thrown away */
+const FILM_M = !!(F.urlM && matchMedia('(orientation: portrait)').matches);
+const FILM_URL = FILM_M ? F.urlM : F.url, FILM_BYTES = FILM_M ? F.bytesM : F.bytes;
+if (FILM_M) stage.classList.add('film-m');
 const GATES = window.__heroGate.G;
 const MQLS = GATES.map(q => matchMedia(q));
 const bands = $$('.band').map((el, i, arr) => ({
@@ -1468,13 +1459,13 @@ video.addEventListener('seeked', () => { seekBusy = false; if (pendingTime !== n
 video.addEventListener('error', () => { seekBusy = false; pendingTime = null; failVideo(); });
 
 let started = false;
-function startBlobFetch() { if (started) return; started = true; if (!F.url) { failVideo(); return; } loadHeroBlob().catch(failVideo); }
+function startBlobFetch() { if (started) return; started = true; if (!FILM_URL) { failVideo(); return; } loadHeroBlob().catch(failVideo); }
 async function loadHeroBlob() {
   const ctrl = new AbortController();
   let watchdog = setTimeout(() => ctrl.abort(), 20000);
-  const res = await fetch(F.url, { priority: 'low', signal: ctrl.signal });
+  const res = await fetch(FILM_URL, { priority: 'low', signal: ctrl.signal });
   if (!res.ok || !res.body) throw new Error('video ' + res.status);
-  const total = Number(res.headers.get('Content-Length')) || F.bytes;
+  const total = Number(res.headers.get('Content-Length')) || FILM_BYTES;
   const reader = res.body.getReader(); const chunks = []; let got = 0, lastRing = 0;
   for (;;) {
     const { done, value } = await reader.read();
@@ -2233,7 +2224,7 @@ document.addEventListener('pointerdown', e => {
    between those marks the film runs with the scroll. While words fill the middle of the screen the film steps back
    (--td), and between chapters it comes forward with the caption for that room. At the end the roof fire burns on its own:
    the film's last frame is the loop's first, so the hand-over has no seam.
-   Phones skip the long film and keep the fire behind the chapters. ---------- */
+   An upright screen flies the film's upright cut. A visitor saving data keeps the fire behind the chapters. ---------- */
 const tour = $('#cy-villa');
 if (tour) {
   const film = $('.tour-film', tour), loop = $('.tour-loop', tour), stage = $('.tour-stage', tour);
@@ -2268,7 +2259,8 @@ if (tour) {
   async function tLoad() {
     if (tStarted) return; tStarted = true;
     try {
-      const res = await fetch(film.dataset.src, { priority: 'low' });
+      const src = film.dataset.srcM && matchMedia('(orientation: portrait)').matches ? film.dataset.srcM : film.dataset.src;
+      const res = await fetch(src, { priority: 'low' });
       if (!res.ok) throw new Error('tour ' + res.status);
       film.src = URL.createObjectURL(await res.blob()); film.preload = 'auto';
       film.addEventListener('loadeddata', () => { tour.classList.add('ready'); tRender(tShown); }, { once: true });
