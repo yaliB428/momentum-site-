@@ -544,8 +544,8 @@ html:not(.js) .tour-stage{position:relative}
 .story-head{position:sticky;top:110px}
 @media (max-height:860px){.story-head{position:static}}
 .story{isolation:isolate;overflow:clip}
-/* film backdrops: real footage pinned full-screen behind a section's words. The clips were shot upright, so on a wide
-   screen each one is cropped to a band around the faces (object-position on the video).
+/* film backdrops: real footage pinned full-screen behind a section's words. The clips were shot upright on a phone, so on a
+   wide screen each one stands whole in a tall frame, over a soft, darkened copy of itself (.bd-blur, made from its poster).
    --bd is how far the footage steps back while you read (0 clear, 1 quiet). */
 .bd{position:absolute;inset:0;z-index:-1;pointer-events:none}
 .j-stage>.bd{z-index:0}
@@ -555,6 +555,13 @@ html:not(.js) .tour-stage{position:relative}
 .bd-shade{position:absolute;inset:0;background-color:rgba(5,5,5,calc(.14 + .5 * var(--bd,0)));transition:background-color .5s linear;
   background-image:linear-gradient(0deg,rgba(5,5,5,.72) 0%,rgba(5,5,5,.38) 30%,rgba(5,5,5,0) 58%)}
 .bd-in::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,var(--canvas) 0%,rgba(5,5,5,0) 12%,rgba(5,5,5,0) 88%,var(--canvas) 100%)}
+.bd-blur{display:none}
+@media (min-aspect-ratio:1/1){
+  .bd-blur{display:block;position:absolute;inset:-8%;background:50% 50%/cover no-repeat;filter:blur(42px) brightness(.5) saturate(1.15);opacity:0;transition:opacity 1.4s var(--ease-out)}
+  .bd-blur.on,html:not(.js) .bd-blur:first-child{opacity:1}
+  .bd-v{inset:auto;left:50%;top:calc(50% + 28px);width:auto;height:min(78vh,1280px);height:min(78svh,1280px);aspect-ratio:9/16;border-radius:26px;box-shadow:0 50px 120px -40px rgba(0,0,0,.9),0 0 0 1px rgba(216,216,222,.12);transform:translate(-50%,-50%) scale(1.04)}
+  .bd-v.on,html:not(.js) .bd-v:first-of-type{transform:translate(-50%,-50%)}
+}
 .story-grid{grid-template-columns:minmax(0,300px) minmax(0,1fr)}
 .service .bd{--bd:.36}
 .service .j-h,.service .j-quote{text-shadow:0 2px 30px rgba(0,0,0,.7)}
@@ -616,7 +623,7 @@ html:not(.js) .tour-stage{position:relative}
 @keyframes aIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
 
 /* consult */
-.consult{position:relative;overflow:hidden}
+.consult{position:relative;overflow:hidden;overflow:clip}
 .consult .bg{position:absolute;inset:0;background:url("../../assets/villa-black.jpg") 50% 50%/cover no-repeat;opacity:.5;transform:scale(1.04)}
 [dir=rtl] .consult .bg{transform:scale(1.04) scaleX(-1)}
 .consult .bg::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(5,5,5,.97) 0%,rgba(5,5,5,.85) 42%,rgba(5,5,5,.45) 100%),linear-gradient(180deg,var(--canvas) 0%,rgba(5,5,5,0) 24%,rgba(5,5,5,0) 78%,var(--canvas) 100%)}
@@ -630,6 +637,13 @@ html:not(.js) .tour-stage{position:relative}
 .co-home .bg::after{z-index:1;background:linear-gradient(180deg,var(--canvas) 0%,rgba(5,5,5,.3) 16%,rgba(5,5,5,.18) 50%,rgba(5,5,5,.34) 84%,var(--canvas) 100%),radial-gradient(120% 90% at 50% 50%,rgba(5,5,5,0) 40%,rgba(5,5,5,.5) 100%)}
 .co-home .consult-grid>div:first-child{padding:clamp(28px,3vw,46px);border-radius:24px;background:rgba(10,10,11,.52);-webkit-backdrop-filter:blur(16px) saturate(1.1);backdrop-filter:blur(16px) saturate(1.1);border:1px solid rgba(216,216,222,.12);box-shadow:0 40px 90px -50px rgba(0,0,0,.9)}
 .co-home .form{background:rgba(12,12,13,.62)}
+/* a narrow screen: the form makes the section several screens tall, so the picture stays one screen high and rides along */
+@media (max-width:900px){
+  .consult .bg{background:none}
+  .consult .bg::before{content:"";position:sticky;top:0;display:block;height:100vh;height:100svh;background:url("../../assets/villa-black.jpg") 50% 50%/cover no-repeat}
+  .co-home .bg::before{content:none}
+  .co-home .bg i{position:sticky;top:0;inset:auto;display:block;height:100vh;height:100svh;margin:0 -6% -100vh;margin-bottom:-100svh}
+}
 .consult-grid{position:relative;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);gap:clamp(40px,6vw,96px);align-items:start}
 .contact-list{list-style:none;margin:36px 0 0;padding:0;display:grid;gap:14px}
 .contact-list li{display:flex;gap:16px;align-items:baseline;color:var(--text-2)}
@@ -830,6 +844,7 @@ body.il .static-settle .il-headline{position:relative;top:auto;left:auto;width:a
   .dash-pane{position:relative;inset:auto;opacity:1;transform:none;pointer-events:auto;margin-bottom:30px}
   .dash-pane:nth-child(n+4){order:4}
   .dash-board{order:3;margin:6px 0 40px;grid-template-columns:1fr;transform:none;opacity:1}
+  .tile{min-height:0}
   .months{gap:3px}
 }
 @media (prefers-reduced-motion: reduce){.dw{opacity:1;transform:none}.dash-pane{transform:none}}
@@ -863,6 +878,7 @@ body.il .static-settle .il-headline{position:relative;top:auto;left:auto;width:a
 [lang=he] .scene-title h2{letter-spacing:0;line-height:1}
 .scene-run{position:relative;z-index:4;margin-top:-100vh;margin-top:-100svh;height:var(--scene-h,220vh);pointer-events:none}
 .scene-card{position:absolute;inset-inline-start:var(--gutter);top:var(--y);width:min(560px,calc(100% - 2 * var(--gutter)));pointer-events:auto;padding:clamp(26px,3vw,42px);border-radius:24px;background:rgba(248,246,239,.9);-webkit-backdrop-filter:blur(14px) saturate(1.1);backdrop-filter:blur(14px) saturate(1.1);border:1px solid rgba(255,255,255,.65);box-shadow:0 40px 90px -40px rgba(8,20,12,.55)}
+[dir=ltr] #il-land .scene-card{inset-inline-start:auto;inset-inline-end:var(--gutter)}
 .scene-card .h2{margin:0;max-width:none;font-size:clamp(2rem,3.4vw,3.1rem)}
 .scene-card .h2>span{display:block}
 .scene-card .lede{margin:18px 0 0;max-width:none;font-size:clamp(1.02rem,1.2vw,1.14rem)}
@@ -881,7 +897,7 @@ body.il .static-settle .il-headline{position:relative;top:auto;left:auto;width:a
 .b-plan .rise{--dr:clamp(0,(var(--p) - .47) * 6,1);stroke-opacity:.9}
 /* the plans: a blue sheet rises and draws itself line by line (axes, plot, buildings, flats, cores, pool, parking,
    trees, dimensions), then lies back onto the plot and hands its lines to the ground */
-.plan-sheet{--sw:min(580px,41vw);position:absolute;z-index:2;left:calc(36vw - var(--sw) / 2);top:21vh;width:var(--sw);aspect-ratio:4/3;border-radius:5px;
+.plan-sheet{--sw:max(300px,min(580px,41vw,calc(134vw - 2 * var(--gutter) - 1204px)));position:absolute;z-index:2;left:calc(33vw - var(--sw) / 2);top:21vh;width:var(--sw);aspect-ratio:4/3;border-radius:5px;
   background-color:#1C4A80;background-image:linear-gradient(rgba(255,255,255,.08) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.08) 1px,transparent 1px),linear-gradient(rgba(255,255,255,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.035) 1px,transparent 1px),radial-gradient(120% 95% at 28% 18%,#2B65A6,#163B6A);background-size:50px 50px,50px 50px,10px 10px,10px 10px,100% 100%;
   border:1px solid rgba(255,255,255,.28);box-shadow:0 50px 100px -40px rgba(6,18,40,.7),inset 0 0 70px rgba(0,0,0,.2);transform-origin:50% 100%;pointer-events:none;
   --ka:clamp(0,(var(--p) - .03) / .08,1);--kl:clamp(0,(var(--p) - .27) / .1,1);
@@ -927,6 +943,7 @@ body.il .static-settle .il-headline{position:relative;top:auto;left:auto;width:a
 .il-switch.on{opacity:1;visibility:visible;transform:none;transition:opacity .5s var(--ease-out),transform .6s var(--ease-out),visibility 0s}
 .il-switch a{padding:9px 16px;border-radius:999px;font:500 .84rem/1 var(--f-body);color:rgba(243,240,231,.74);text-decoration:none;transition:background-color .4s var(--ease-out),color .4s var(--ease-out)}
 .il-switch a.on{background:#E1EDC2;color:#0D1F13}
+@media (max-width:900px){.scene-card{top:var(--ym,var(--y))}}
 @media (max-width:720px){.b-steps li{padding:9px 10px 11px}.b-steps b{font-size:.82rem}.scene-card{padding:22px}.il-switch{display:none}}
 .land-notes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:clamp(16px,2.2vw,32px);margin-top:clamp(56px,9vh,100px)}
 .land-notes article{padding:clamp(26px,3vw,44px);border-radius:22px;background:#FBFAF5;border:1px solid var(--line)}
@@ -1066,7 +1083,7 @@ body.paused *,body.paused *::before,body.paused *::after{animation-play-state:pa
   <section class="scene il-day" id="il-land" aria-labelledby="ill-h" style="--scene-h:760vh">
     <div class="scene-stage" style="--t-out:.02">
       <img src="../../assets/il-build-a.jpg" alt="מגרש ריק בין שדות ירוקים לכביש חדש, ועיר של מגדלים במרחק" loading="lazy" decoding="async" width="1920" height="1086">
-      <video class="b-film" muted playsinline preload="none" tabindex="-1" aria-hidden="true" disablepictureinpicture data-src="../../assets/il-build.mp4" data-dur="9.9167" data-tmap="[[0,0],[0.5,0],[0.7,0.5],[0.9,1],[1,1]]"></video>
+      <video class="b-film" muted playsinline preload="none" tabindex="-1" aria-hidden="true" disablepictureinpicture data-src="../../assets/il-build.mp4" data-src-m="../../assets/il-build-m.mp4" data-dur="9.9167" data-tmap="[[0,0],[0.5,0],[0.7,0.5],[0.9,1],[1,1]]"></video>
       <img class="b-c" src="../../assets/il-build-c.jpg" alt="" aria-hidden="true" loading="lazy" decoding="async" width="1920" height="1086">
       <svg class="b-plan" viewBox="0 0 1344 760" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
         <path class="grid" pathLength="1" d="M166 379 L1092 316"/><path class="grid" pathLength="1" d="M253 443 L1139 341"/><path class="grid" pathLength="1" d="M339 506 L1185 367"/><path class="grid" pathLength="1" d="M398 307 L691 511"/><path class="grid" pathLength="1" d="M717 299 L958 453"/>
@@ -1119,7 +1136,7 @@ body.paused *,body.paused *::before,body.paused *::after{animation-play-state:pa
       </ol>
     </div>
     <div class="scene-run">
-      <div class="scene-card" style="--y:210vh">
+      <div class="scene-card" style="--y:210vh;--ym:320vh">
         <h2 class="h2" id="ill-h"><span>הקרקע של היום.</span> <span>הפוטנציאל של המחר.</span></h2>
         <p class="lede">ב־Momentum אנחנו לא מחפשים רק קרקעות במחיר כניסה אטרקטיבי. אנחנו מחפשים הזדמנויות שבהן קיימת היתכנות עתידית אמיתית שניתן לבחון על בסיס המצב הקיים, התכנון והסביבה.</p>
       </div>
@@ -1226,6 +1243,7 @@ const T = {
    the circle only ever moves forward and ends in a blur, which opens onto the main line */
 const F = {
   url: ROOT + 'assets/il-orbit.mp4', bytes: 4325752, seconds: 4.9167,
+  urlM: ROOT + 'assets/il-orbit-m.mp4', bytesM: 3786851, posterM: ROOT + 'assets/il-orbit-poster-m.jpg',
   poster: ROOT + 'assets/il-orbit-poster.jpg', end: ROOT + 'assets/il-orbit-end.jpg',
   tmap: [[0, 0], [0.03, 0], [0.62, 1], [1, 1]],
   intro: null, cue: [0.01, 0.06], pe: [0.42, 0.72], pz: null,
@@ -1365,9 +1383,9 @@ $$('.hero .il-headline').forEach(box => {
 const hero = $('.hero'), stage = $('#stage'), video = $('#heroVideo'), poster = $('.poster'), posterEnd = $('.poster-end');
 const media = $('.media'), lockup = $('#lockup'), nav = $('#nav'), ring = $('.ring'), cue = $('.cue');
 const INTRO = !!(F.intro && lockup);
-/* an upright screen gets the film's upright cut where there is one: the whole cut fills the screen, so nothing is thrown away */
-const FILM_M = !!(F.urlM && matchMedia('(orientation: portrait)').matches);
-const FILM_URL = FILM_M ? F.urlM : F.url, FILM_BYTES = FILM_M ? F.bytesM : F.bytes;
+/* a phone-shaped screen (narrower than 2:3) gets the film's upright cut where there is one: the cut fills the screen */
+const FILM_M = !!(F.urlM && matchMedia('(max-aspect-ratio: 2/3)').matches);
+const FILM_URL = FILM_M ? F.urlM : F.url, FILM_BYTES = FILM_M ? F.bytesM : F.bytes, FILM_POSTER = FILM_M && F.posterM ? F.posterM : F.poster;
 if (FILM_M) stage.classList.add('film-m');
 const GATES = window.__heroGate.G;
 const MQLS = GATES.map(q => matchMedia(q));
@@ -1500,7 +1518,7 @@ function failVideo() {
 }
 function initHeroOnce() {
   if (heroInit) return; heroInit = true;
-  const img = new Image(); img.onload = startBlobFetch; img.onerror = startBlobFetch; img.src = F.poster;
+  const img = new Image(); img.onload = startBlobFetch; img.onerror = startBlobFetch; img.src = FILM_POSTER;
   setTimeout(startBlobFetch, 4000);
 }
 
@@ -1591,7 +1609,7 @@ function computeMx() {
 function enableScrub() {
   if (scrubOn) return; scrubOn = true;
   cancelAnimationFrame(staticNameRaf);
-  poster.style.backgroundImage = `url('${F.poster}')`;
+  poster.style.backgroundImage = `url('${FILM_POSTER}')`;
   initHeroOnce();
   measure();
   bands.forEach(b => { b.c = {}; });
@@ -2259,7 +2277,7 @@ if (tour) {
   async function tLoad() {
     if (tStarted) return; tStarted = true;
     try {
-      const src = film.dataset.srcM && matchMedia('(orientation: portrait)').matches ? film.dataset.srcM : film.dataset.src;
+      const src = film.dataset.srcM && matchMedia('(max-aspect-ratio: 2/3)').matches ? film.dataset.srcM : film.dataset.src;
       const res = await fetch(src, { priority: 'low' });
       if (!res.ok) throw new Error('tour ' + res.status);
       film.src = URL.createObjectURL(await res.blob()); film.preload = 'auto';
@@ -2306,6 +2324,8 @@ $$('.bd').forEach(bd => {
   const host = bd.closest('section'), vids = $$('.bd-v', bd), dimEl = bd.dataset.dim ? $(bd.dataset.dim) : null;
   /* the shade over the films: it carries --bd, and a darker foot so words low on the screen stay readable */
   const shade = document.createElement('div'); shade.className = 'bd-shade'; vids[vids.length - 1].after(shade);
+  /* each clip's soft copy, for wide screens (CSS shows it only there) */
+  vids.forEach(v => { const b = document.createElement('i'); b.className = 'bd-blur'; b.style.backgroundImage = `url('${v.getAttribute('poster')}')`; v.before(b); v._blur = b; });
   const marks = vids.map(v => v.dataset.at ? $(v.dataset.at) : null);
   const saveData = !!(navigator.connection && navigator.connection.saveData);
   let on = false, cur = -1, raf = 0, dim = -1;
@@ -2317,7 +2337,7 @@ $$('.bd').forEach(bd => {
     if (k !== cur) {
       cur = k;
       vids.forEach((v, i) => {
-        v.classList.toggle('on', i === k);
+        v.classList.toggle('on', i === k); v._blur.classList.toggle('on', i === k);
         if (i === k) play(v); else setTimeout(() => { if (!v.classList.contains('on') && !v.paused) v.pause(); }, 1500);
       });
     }
@@ -2352,7 +2372,8 @@ $$('.scene').forEach(sc => {
     const load = async () => {
       if (started || reduced) return; started = true;
       try {
-        const res = await fetch(film.dataset.src); if (!res.ok) throw new Error('film ' + res.status);
+        const src = film.dataset.srcM && matchMedia('(max-aspect-ratio: 2/3)').matches ? film.dataset.srcM : film.dataset.src;
+        const res = await fetch(src); if (!res.ok) throw new Error('film ' + res.status);
         film.src = URL.createObjectURL(await res.blob()); film.preload = 'auto';
         film.addEventListener('loadeddata', () => { ready = true; sc.classList.add('film-on'); seek(); }, { once: true });
         film.load();
